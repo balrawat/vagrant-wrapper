@@ -2,15 +2,20 @@
 ###  vag  - shell wrapper for vagrant to manage creation of VMs, 
 ### creation of directories & modification of Vagrantfile automatically for you
 
-# e.g. vag -v test -b centos6 -c 2 -m 1024
-#   where -v is for VM NAME
-#         -b is for Box Name that you use in VirtualBox
-#         -c is for CPU cores to use
-#         -m is for Memory to use in MB
+## Prequisites:-
+# You should have a linux host machine with VirtualBox & Vagrant installed & working.
 
-
+###############################################################################################################################
 ##  Make sure to set the STORAGE_DIR as per your configuration. I'm using /opt/vm directory for storing all the vagrant files.
 STORAGE_DIR="/opt/vm"
+
+usage() {
+  echo "Syntax of command is:
+	vag [-v <vm-name> ] [-b <box-name> ] [-c <cpu cores to use>] [-m <memory to use in MB>]
+	or
+	vag -l  # for listing VMs status from your machine
+	vm-name & box-name are mandatory"
+}
 
 list_vms() {
 echo -e "==========================================================================================="
@@ -25,7 +30,16 @@ echo -e "=======================================================================
 		
 }
 
-while getopts "v:b:c:m:l" opt; do
+check_name() {
+  if [ "$1" == "" ]; then
+    retval=0;
+  else
+    retval=1;
+  fi
+  return "$retval"
+}
+TEST="false"
+while getopts "v:b:c:m:lht" opt; do
 #	echo $opt $OPTIND $OPTARG
 #	exit
 	case ${opt} in
@@ -49,19 +63,34 @@ while getopts "v:b:c:m:l" opt; do
 		list_vms
 		exit 0
 		;;
-	*)
-		echo " Please correct syntax"
-		exit 1
+	t)
+		TEST="true"
+		;;
+	?|h)
+	#	echo " Please correct syntax"
+		usage
+		exit 0
 		;;
 	esac
 done
 
+## check for mandatory options
+if [ -z $VMNAME ] || [ -z $BOXNAME ]
+then
+  echo "You must specify VM name using -v option & Box name using -b option"
+  usage
+  exit 2
+fi
+
+if [ $TEST == "false" ]; then
 ## create directory & initialize vagrantfile
 cd /opt/vm
 mkdir $VMNAME && cd $VMNAME
 vagrant init $BOXNAME
 
+
 ## populate Vagrantfile
+
 echo "Vagrant.configure(\"2\") do |config|" > Vagrantfile
 [ -z $BOXNAME ] || echo "  config.vm.box = \"$BOXNAME\"" >> Vagrantfile
 [ -z $VMNAME ] || echo "  config.vm.hostname = \"$VMNAME\"" >> Vagrantfile
@@ -73,4 +102,6 @@ echo "  end" >> Vagrantfile
 echo "end" >> Vagrantfile
 
 ## start machine
-vagrant up
+
+  vagrant up
+fi
