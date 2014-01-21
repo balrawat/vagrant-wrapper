@@ -1,0 +1,81 @@
+#!/bin/bash
+###  vag  - shell wrapper for vagrant to manage creation of VMs, 
+### creation of directories & modification of Vagrantfile automatically for you
+
+# e.g. vag create --vm-name=test --box-name=centos6 --cpu=2 --memory=1024
+#set -x
+
+#while getopts ":vm-name:box-name:cpu:memory" opt; do
+STORAGE_DIR="/opt/vm"
+list_vms() {
+echo -e "==========================================================================================="
+echo -e "LOCATION\t\tVMNAME\t\tBOXNAME\t\tCPU\tMEMORY\t\tSTATUS"
+echo -e "==========================================================================================="
+ctr=0
+for i in `ls $STORAGE_DIR`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "$i"; ctr=$(($ctr + 1)) ;cd /opt/vm/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%17s' "$BOXNAME"; printf '%12s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
+#for myvm in `cat ~/.vag/vmlist | awk '{ print $1 }'`; do
+#	cd $myvm
+#	echo -n $myvm
+	
+#	( vagrant status | grep running ) > /dev/null 2>&1 &&  echo " VM is running" || echo "VM is not running"
+#done
+#cat ~/.vag/vmlist
+if [ $ctr -eq 0 ]; then
+  echo -e "\t NO VMs FOUND"
+fi
+echo -e "==========================================================================================="
+		
+}
+while getopts "v:b:c:m:l" opt; do
+#	echo $opt $OPTIND $OPTARG
+#	exit
+	case ${opt} in
+	v)
+		VMNAME=${OPTARG}
+		#echo VMNAME ${OPTARG}
+		;;
+	b)
+		BOXNAME=${OPTARG}
+		#echo BOXNAME ${OPTARG}
+		;;
+	c)
+		CPU=${OPTARG}
+		#echo CPU ${OPTARG}
+		;;
+	m)
+		MEMORY=${OPTARG}
+		#echo MEMORY ${OPTARG}
+		;;
+	l)
+		list_vms
+		exit 0
+		;;
+	*)
+		echo " Please correct syntax"
+		exit 1
+		;;
+	esac
+done
+[ -z $VMNAME ] ||  echo VMNAME $VMNAME
+[ -z $BOXNAME ] || echo BOXNAME $BOXNAME
+[ -z $CPU ] || echo CPU $CPU
+[ -z $MEMORY ] || echo MEMORY $MEMORY
+
+## create directory
+cd /opt/vm
+mkdir $VMNAME && cd $VMNAME
+vagrant init $BOXNAME
+
+## populate Vagrantfile
+echo "Vagrant.configure(\"2\") do |config|" > Vagrantfile
+[ -z $BOXNAME ] || echo "  config.vm.box = \"$BOXNAME\"" >> Vagrantfile
+[ -z $VMNAME ] || echo "  config.vm.hostname = \"$VMNAME\"" >> Vagrantfile
+echo "  config.vm.provider :virtualbox do |vb|" >> Vagrantfile
+echo "    vb.name = \"$VMNAME\"" >> Vagrantfile
+[ -z $CPU ] || echo "    vb.customize [\"modifyvm\", :id, \"--cpus\", \"$CPU\"]" >> Vagrantfile
+[ -z $MEMORY ] || echo "    vb.customize [\"modifyvm\", :id, \"--memory\", \"$MEMORY\"]" >> Vagrantfile
+echo "  end" >> Vagrantfile
+echo "end" >> Vagrantfile
+
+## start machine
+vagrant up
