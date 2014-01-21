@@ -3,8 +3,13 @@
 ### creation of directories & modification of Vagrantfile automatically for you
 
 # e.g. vag -v test -b centos6 -c 2 -m 1024
+#   where -v is for VM NAME
+#         -b is for Box Name that you use in VirtualBox
+#         -c is for CPU cores to use
+#         -m is for Memory to use in MB
 
 
+##  Make sure to set the STORAGE_DIR as per your configuration. I'm using /opt/vm directory for storing all the vagrant files.
 STORAGE_DIR="/opt/vm"
 
 list_vms() {
@@ -12,7 +17,7 @@ echo -e "=======================================================================
 echo -e "LOCATION\t\tVMNAME\t\tBOXNAME\t\tCPU\tMEMORY\t\tSTATUS"
 echo -e "==========================================================================================="
 ctr=0
-for i in `ls $STORAGE_DIR`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "$i"; ctr=$(($ctr + 1)) ;cd /opt/vm/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%17s' "$BOXNAME"; printf '%12s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
+for i in `ls $STORAGE_DIR`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "$i"; ctr=$(($ctr + 1)) ;cd $STORAGE_DIR/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%17s' "$BOXNAME"; printf '%12s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
 if [ $ctr -eq 0 ]; then
   echo -e "\t NO VMs FOUND"
 fi
