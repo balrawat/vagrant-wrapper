@@ -11,22 +11,31 @@ STORAGE_DIR="/opt/vm"
 
 usage() {
   echo "Syntax of command is:
-	vag [-v <vm-name> ] [-b <box-name> ] [-c <cpu cores to use>] [-m <memory to use in MB>]
+	vag [-v <vm-name> ] [-b <box-name> ] [-c <cpu cores to use>] [-m <memory to use in MB>] [-t # enabling test mode]
 	or
 	vag -l  # for listing VMs status from your machine
 	vm-name & box-name are mandatory"
 }
 
 list_vms() {
-echo -e "==========================================================================================="
-echo -e "LOCATION\t\tVMNAME\t\tBOXNAME\t\tCPU\tMEMORY\t\tSTATUS"
-echo -e "==========================================================================================="
+echo -e "======================================================================================="
+printf '%55s\n' "VIRTUAL BOX VM STATUS REPORT"
+echo -e "======================================================================================="
+#echo -e "LOCATION\t\tVMNAME\t\tBOXNAME\t\tCPU\tMEMORY\t\tSTATUS"
+printf '%10s' "LOCATION" 
+printf '%20s' "VMNAME"
+printf '%15s' "BOXNAME"
+printf '%8s' "CPU"
+printf '%12s' "MEMORY"
+printf '%20s\n' "STATUS"
+echo -e "======================================================================================="
 ctr=0
-for i in `ls $STORAGE_DIR`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "$i"; ctr=$(($ctr + 1)) ;cd $STORAGE_DIR/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%17s' "$BOXNAME"; printf '%12s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
+cd $STORAGE_DIR
+for i in `ls -d */`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "${i%%/}"; ctr=$(($ctr + 1)) ;cd $STORAGE_DIR/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%15s' "$BOXNAME"; printf '%8s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
 if [ $ctr -eq 0 ]; then
   echo -e "\t NO VMs FOUND"
 fi
-echo -e "==========================================================================================="
+echo -e "======================================================================================="
 		
 }
 
