@@ -4,7 +4,7 @@
 
 ## Prequisites:-
 # You should have a linux host machine with VirtualBox & Vagrant installed & working.
-# Alao make sure you a "box" image available.
+# Also make sure you a "box" image available.
 # You can check the boxes by running the command : vagrant box list
 
 ###############################################################################################################################
