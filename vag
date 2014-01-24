@@ -8,7 +8,7 @@
 # You can check the boxes by running the command : vagrant box list
 
 ###############################################################################################################################
-##  Make sure to set the STORAGE_DIR as per your configuration. I'm using /opt/vm directory for storing all the vagrant files.
+##  Make sure to set the STORAGE_DIR as per your configuration/choice. I'm using /opt/vm directory for storing all the vagrant files.
 STORAGE_DIR="/opt/vm"
 
 usage() {
