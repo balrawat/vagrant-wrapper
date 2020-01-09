@@ -4,7 +4,7 @@
 
 ## Prequisites:-
 # You should have a linux host machine with VirtualBox & Vagrant installed & working.
-# Also make sure you a "box" image available.
+# Also make sure you have a "box" image available.
 # You can check the boxes by running the command : vagrant box list
 
 ###############################################################################################################################
@@ -33,7 +33,20 @@ printf '%20s\n' "STATUS"
 echo -e "======================================================================================="
 ctr=0
 cd $STORAGE_DIR
-for i in `ls -d */`; do printf '%10s' "$STORAGE_DIR"; printf '%20s' "${i%%/}"; ctr=$(($ctr + 1)) ;cd $STORAGE_DIR/$i; BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; printf '%15s' "$BOXNAME"; printf '%8s' "$CPU"; printf '%12s' "$MEMORY MB"; (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; done
+for i in `ls -d */`; 
+do 
+  printf '%10s' "$STORAGE_DIR"; 
+  printf '%20s' "${i%%/}"; 
+  ctr=$(($ctr + 1)) ;
+  cd $STORAGE_DIR/$i; 
+  BOXNAME=`cat Vagrantfile | grep vm.box | awk -F"\"" '{print $2}'`; 
+  CPU=`cat Vagrantfile | grep "cpus" | awk -F"\"" '{print $6}'`; 
+  MEMORY=`cat Vagrantfile | grep "memory" | awk -F"\"" '{print $6}'`; 
+  printf '%15s' "$BOXNAME"; 
+  printf '%8s' "$CPU"; 
+  printf '%12s' "$MEMORY MB"; 
+  (vagrant status | grep running) > /dev/null 2>&1 && printf '%23s\n' "VM is running" || printf '%20s\n' "VM is not running"; 
+done
 if [ $ctr -eq 0 ]; then
   echo -e "\t NO VMs FOUND"
 fi
